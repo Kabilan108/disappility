@@ -1,29 +1,63 @@
-#! python3.7
+# modified from https://github.com/davabase/whisper_real_time
 
-import argparse
-import os
-import numpy as np
+from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline
 import speech_recognition as sr
-import whisper
-import torch
+import numpy as np
 import sounddevice
+import torch
 
 from datetime import datetime, timedelta
 from queue import Queue
 from time import sleep
 from sys import platform
+import argparse
+import os
+
+MODEL_CHOICES = [
+    "distil-whisper/distil-small.en",
+    "distil-whisper/distil-medium.en",
+    "distil-whisper/distil-large-v3",
+]
+DEFAULT_MODEL = MODEL_CHOICES[1]
+
+def load_model(model_name: str):
+    try:
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        dtype = torch.float16 if torch.cuda.is_available() else torch.float32
+
+        model = AutoModelForSpeechSeq2Seq.from_pretrained(
+            model_name,
+            torch_dtype=dtype,
+            low_cpu_mem_usage=True,
+            use_safetensors=True,
+        )
+        model.to(device)
+
+        processor = AutoProcessor.from_pretrained(model_name)
+
+        pipe = pipeline(
+            "automatic-speech-recognition",
+            model=model,
+            tokenizer=processor.tokenizer,
+            feature_extractor=processor.feature_extractor,
+            max_new_tokens=128,
+            torch_dtype=dtype,
+            device=device,
+        )
+
+        return pipe
+    except Exception as e:
+        print(f"Error loading model {model_name}: {e}")
+        return None
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--model",
-        default="medium",
+        default=DEFAULT_MODEL,
         help="Model to use",
-        choices=["tiny", "base", "small", "medium", "large"],
-    )
-    parser.add_argument(
-        "--non_english", action="store_true", help="Don't use the english model."
+        choices=MODEL_CHOICES,
     )
     parser.add_argument(
         "--energy_threshold",
@@ -83,9 +117,8 @@ def main():
 
     # Load / Download model
     model = args.model
-    if args.model != "large" and not args.non_english:
-        model = model + ".en"
-    audio_model = whisper.load_model(model)
+    # audio_model = whisper.load_model(model)
+    audio_model = load_model(model)
 
     record_timeout = args.record_timeout
     phrase_timeout = args.phrase_timeout
@@ -141,9 +174,7 @@ def main():
                 )
 
                 # Read the transcription.
-                result = audio_model.transcribe(
-                    audio_np, fp16=torch.cuda.is_available()
-                )
+                result = audio_model(audio_np)
                 text = result["text"].strip()
 
                 # If we detected a pause between recordings, add a new item to our transcription.
