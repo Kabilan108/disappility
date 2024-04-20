@@ -3,7 +3,6 @@
 from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline
 import speech_recognition as sr
 import numpy as np
-import sounddevice
 import torch
 
 from datetime import datetime, timedelta
@@ -13,12 +12,13 @@ from sys import platform
 import argparse
 import os
 
-MODEL_CHOICES = [
-    "distil-whisper/distil-small.en",
-    "distil-whisper/distil-medium.en",
-    "distil-whisper/distil-large-v3",
-]
-DEFAULT_MODEL = MODEL_CHOICES[1]
+MODEL_CHOICES = {
+    "small": "distil-whisper/distil-small.en",
+    "medium": "distil-whisper/distil-medium.en",
+    "large": "distil-whisper/distil-large-v3",
+}
+DEFAULT_MODEL = "medium"
+
 
 def load_model(model_name: str):
     try:
@@ -57,7 +57,7 @@ def main():
         "--model",
         default=DEFAULT_MODEL,
         help="Model to use",
-        choices=MODEL_CHOICES,
+        choices=MODEL_CHOICES.keys(),
     )
     parser.add_argument(
         "--energy_threshold",
@@ -116,7 +116,7 @@ def main():
         source = sr.Microphone(sample_rate=16000)
 
     # Load / Download model
-    model = args.model
+    model = MODEL_CHOICES[args.model]
     # audio_model = whisper.load_model(model)
     audio_model = load_model(model)
 
