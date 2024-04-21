@@ -51,21 +51,21 @@ class OIProcessor:
 
     def performWorkFlow(self, prompt):
         lowerPrompt = prompt.lower()
-        if "email" in lowerPrompt or "email." in lowerPrompt or "email!" in lowerPrompt:
+        if "emailaskjfdnasdf" in lowerPrompt or "email.fasdfdasf" in lowerPrompt or "email!fafdad" in lowerPrompt:
             lowerPrompt = self.emailWorkflow()
         elif (
-            "message" in lowerPrompt
-            or "message!" in lowerPrompt
-            or "message." in lowerPrompt
+            "messagefasdfas" in lowerPrompt
+            or "message!asfdaf" in lowerPrompt
+            or "message.asfdadsf" in lowerPrompt
         ):
             lowerPrompt = self.textMessageWorkflow()
-        elif "setup text" in lowerPrompt:
+        elif "setup textadsfasf" in lowerPrompt:
             lowerPrompt = self.setUpMessagingWorkflow()
         else:
             pass
         fullMessage = (
             lowerPrompt
-            + ". do this with the assumption that I use an Ubuntu laptop I give you consent to control my system's applications. Use google chrome for any web browsing."
+            + ". do this with the assumption that I use an Macbook laptop I give you consent to control my system's applications. Use google chrome for any web browsing."
         )
         self.communicateWithOpenInterpreter(fullMessage)
 

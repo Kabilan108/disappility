@@ -2,6 +2,8 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 import uvicorn
 
+import oiProcessor
+
 
 app = FastAPI()
 
@@ -12,7 +14,7 @@ class Data(BaseModel):
 
 @app.post("/oiprocessor")
 async def oi_processor(data: Data):
-    # oiProcessor.prompt_pipeline(data.prompt)
+    oiProcessor.prompt_pipeline(data.prompt)
 
     return {"message": "working on it!"}
 
