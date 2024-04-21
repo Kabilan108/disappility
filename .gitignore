@@ -1,3 +1,4 @@
 .env
 *.onnx
 *.onnx.json
+node_modules/
