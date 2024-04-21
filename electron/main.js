@@ -17,8 +17,8 @@ function createWindow() {
   });
 
   // and load the index.html of the app.
-  // mainWindow.loadFile("index.html");
-  mainWindow.loadURL("http://localhost:3000");
+  mainWindow.loadFile("index.html");
+  // mainWindow.loadURL("http://localhost:3000");
 
   // Open the DevTools.
   mainWindow.webContents.openDevTools();
@@ -27,6 +27,7 @@ function createWindow() {
 function createWorkers() {
   console.log("creating workers");
   speaker = utils.spawnWorker("speak");
+  whisper = utils.spawnWorker("transcribe");
 
   speaker.stderr.on("data", (data) => {
     console.log(`stderr: ${data}`);
@@ -46,7 +47,19 @@ function createWorkers() {
     console.log(`child process exited with code ${code}`);
   });
 
-  return { speaker: speaker };
+  promptengineer = utils.spawnWorker("promptengineer");
+
+  promptengineer.stdout.on("data", (data) => {
+    const message = data.toString().trim();
+    console.log(message);
+
+    if (message.startsWith("[TELLUSER")) {
+      cmd = `[SPEAK] ${message.split(" ")[1]}`;
+      speaker.stdin.write(cmd + "\n");
+    }
+  });
+
+  return { speaker: speaker, whisper: whisper };
 }
 
 app.whenReady().then(() => {
