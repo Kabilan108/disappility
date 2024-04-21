@@ -109,7 +109,7 @@ def main():
     )
     parser.add_argument(
         "--phrase_timeout",
-        default=3,
+        default=4,
         help="How much empty space between recordings before we "
         "consider it a new line in the transcription.",
         type=float,
@@ -117,6 +117,7 @@ def main():
     parser.add_argument(
         "--use_cpu",
         action="store_true",
+        default=True,
         help="Set this flag to force the model to use CPU instead of GPU.",
     )
     if "linux" in platform:
