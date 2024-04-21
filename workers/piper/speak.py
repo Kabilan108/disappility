@@ -54,6 +54,7 @@ def main():
     synthesizer_args = {"sentence_silence": 0.0}
 
     print(msg.READY.value)
+    sys.stdout.flush()
 
     try:
         for line in sys.stdin:
