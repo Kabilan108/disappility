@@ -28,6 +28,7 @@ function createWorkers() {
   console.log("creating workers");
   speaker = utils.spawnWorker("speak");
   whisper = utils.spawnWorker("transcribe");
+  openInterpreter = utils.spawnWorker("openInterpreter");
 
   speaker.stderr.on("data", (data) => {
     console.log(`stderr: ${data}`);
