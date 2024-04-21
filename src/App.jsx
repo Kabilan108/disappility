@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { VoiceCommand } from "./components/ui/voice-command";
 import "./App.css";
 
 function App() {
   const [count, setCount] = useState(0);
   const [speakerReady, setSpeakerReady] = useState(0);
   const [whisperReady, setWhisperReady] = useState(0);
+  const [userCommand, setUserCommand] = useState("");
   // TODO: implement state for promptenginner stuff
 
   useEffect(() => {
@@ -17,6 +19,12 @@ function App() {
       setWhisperReady(value);
     });
   }, []);
+
+  useEffect(() => {
+    window.electron.onUserSays((value) => {
+      setUserCommand(value);
+    });
+  });
 
   const appReady = speakerReady === 1 && whisperReady === 1;
 
@@ -33,14 +41,18 @@ function App() {
           />
         </div>
         <div className="w-full max-w-md space-y-4">
-          <Input
+          {/* <Input
             className="w-full rounded-lg bg-gray-800 px-4 py-3 text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-600"
             placeholder="Enter your voice command or text prompt"
             type="text"
+          /> */}
+          <VoiceCommand
+            userCommand={userCommand}
+            className="w-full rounded-lg bg-gray-800 px-4 py-3 text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-600"
           />
-          <Button className="w-full rounded-lg bg-indigo-600 py-3 font-medium transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          {/* <Button className="w-full rounded-lg bg-indigo-600 py-3 font-medium transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
             Submit
-          </Button>
+          </Button> */}
         </div>
       </div>
     </main>
