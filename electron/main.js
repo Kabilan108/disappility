@@ -33,6 +33,7 @@ function createWorkers() {
 
   speaker.stdout.on("data", (data) => {
     const message = data.toString().trim();
+    console.log(message);
 
     if (message == "[READY]") {
       console.log("speaker is ready");

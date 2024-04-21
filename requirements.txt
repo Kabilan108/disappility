@@ -1,6 +1,6 @@
+openai==1.11.1
 numpy
-# piper-tts
-pyaudio
+pygame
 sounddevice
 SpeechRecognition
 torch
