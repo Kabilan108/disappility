@@ -14,7 +14,10 @@ from enum import Enum
 import datetime as dt
 import tempfile
 import argparse
+import warnings
 import re
+
+warnings.filterwarnings("ignore")
 
 ptn = re.compile("([h]?an[n]?a)(.*?)(thank(?:s| you))")
 
@@ -230,7 +233,7 @@ def main():
                 match = ptn.search(transcript.lower())
                 if match:
                     cmd = get_cmd(transcript.lower(), ptn)
-                    print(f"{msg.USERSAYS} {cmd}", flush=True)
+                    print(f"{msg.USERSAYS.value} {cmd}", flush=True)
                     transcript = ""
 
             else:
