@@ -6,19 +6,50 @@ import numpy as np
 import sounddevice  # noqa: F401
 import torch
 
-from datetime import datetime, timedelta
+from sys import platform
+from pathlib import Path
 from queue import Queue
 from time import sleep
-from sys import platform
+from enum import Enum
+import datetime as dt
+import tempfile
 import argparse
-import os
+import re
+
+ptn = re.compile("([h]?an[n]?a)(.*?)(thank(?:s| you))")
 
 MODEL_CHOICES = {
     "small": "distil-whisper/distil-small.en",
     "medium": "distil-whisper/distil-medium.en",
     "large": "distil-whisper/distil-large-v3",
 }
+
 DEFAULT_MODEL = "small"
+
+
+class msg(str, Enum):
+    READY = "[READY]"
+    USERSAYS = "[USERSAYS]"
+
+
+def get_tempfile() -> Path:
+    suffix = f"{dt.datetime.utcnow().strftime('%Y%m%d%H%M%S')}-aiccessible.transcript"
+    return Path(tempfile.mktemp(suffix=suffix))
+
+
+def save_transcripts(transcripts: list[str]) -> None:
+    with open(get_tempfile(), "w") as f:
+        f.write("\n".join(transcripts))
+
+
+def get_cmd(transcript: str, ptn: re.Pattern) -> str:
+    cmd = re.sub("[.,;:!?]", " ", transcript).strip()
+    match = ptn.search(cmd)
+    if match:
+        match = [x.strip() for x in match.groups()]
+        return match[1]
+    else:
+        return None
 
 
 def load_model(model_name: str, use_cpu: bool = False):
@@ -127,13 +158,13 @@ def main():
 
     # Load / Download model
     model = MODEL_CHOICES[args.model]
-    # audio_model = whisper.load_model(model)
     audio_model = load_model(model, use_cpu=args.use_cpu)
 
     record_timeout = args.record_timeout
     phrase_timeout = args.phrase_timeout
 
     transcription = [""]
+    transcript = ""
 
     with source:
         recorder.adjust_for_ambient_noise(source)
@@ -154,17 +185,17 @@ def main():
     )
 
     # Cue the user that we're ready to go.
-    print("Model loaded.\n")
+    print(msg.READY.value, flush=True)
 
     while True:
         try:
-            now = datetime.utcnow()
+            now = dt.datetime.utcnow()
             # Pull raw recorded audio from the queue.
             if not data_queue.empty():
                 phrase_complete = False
                 # If enough time has passed between recordings, consider the phrase complete.
                 # Clear the current working audio buffer to start over with the new data.
-                if phrase_time and now - phrase_time > timedelta(
+                if phrase_time and now - phrase_time > dt.timedelta(
                     seconds=phrase_timeout
                 ):
                     phrase_complete = True
@@ -192,23 +223,26 @@ def main():
                 if phrase_complete:
                     transcription.append(text)
                 else:
-                    transcription[-1] = text
+                    transcription[-1] += text
+                transcript += text + " "
 
-                # Clear the console to reprint the updated transcription.
-                os.system("cls" if os.name == "nt" else "clear")
-                for line in transcription:
-                    print(line)
-                # Flush stdout.
-                print("", end="", flush=True)
+                match = ptn.search(transcript.lower())
+                if match:
+                    cmd = get_cmd(transcript.lower(), ptn)
+                    print(f"{msg.USERSAYS} {cmd}", flush=True)
+                    transcript = ""
+
             else:
                 # Infinite loops are bad for processors, must sleep.
                 sleep(0.25)
+
         except KeyboardInterrupt:
             break
 
-    print("\n\nTranscription:")
+    print("transcription:")
     for line in transcription:
         print(line)
+    save_transcripts(transcript)
 
 
 if __name__ == "__main__":
