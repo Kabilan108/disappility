@@ -33,9 +33,12 @@ function createWorkers() {
     console.log(`stderr: ${data}`);
   });
 
+  whisper.stderr.on("data", (data) => {
+    console.log(`stderr: ${data}`);
+  });
+
   speaker.stdout.on("data", (data) => {
     const message = data.toString().trim();
-    console.log(message);
 
     if (message == "[READY]") {
       console.log("speaker is ready");
@@ -43,21 +46,32 @@ function createWorkers() {
     }
   });
 
-  speaker.on("close", (code) => {
-    console.log(`child process exited with code ${code}`);
-  });
-
-  promptengineer = utils.spawnWorker("promptengineer");
-
-  promptengineer.stdout.on("data", (data) => {
+  whisper.stdout.on("data", (data) => {
     const message = data.toString().trim();
-    console.log(message);
 
-    if (message.startsWith("[TELLUSER")) {
-      cmd = `[SPEAK] ${message.split(" ")[1]}`;
-      speaker.stdin.write(cmd + "\n");
+    if (message == "[READY]") {
+      console.log("whisper is ready");
+      mainWindow?.webContents.send("whisper-ready", 1);
+    }
+
+    if (message.startsWith("[USERSAYS]")) {
+      message = message.replace("[USERSAYS]", "").trim(); // Use substitution to remove the "[USERSAYS]" token
+      // TODO: send to promptengineer
+      console.log(message);
     }
   });
+
+  // promptengineer = utils.spawnWorker("promptengineer");
+
+  // promptengineer.stdout.on("data", (data) => {
+  //   const message = data.toString().trim();
+  //   console.log(message);
+
+  //   if (message.startsWith("[TELLUSER")) {
+  //     cmd = `[SPEAK] ${message.split(" ")[1]}`;
+  //     speaker.stdin.write(cmd + "\n");
+  //   }
+  // });
 
   return { speaker: speaker, whisper: whisper };
 }
@@ -66,10 +80,10 @@ app.whenReady().then(() => {
   workers = createWorkers();
   createWindow();
 
-  ipcMain.handle("speak", (event, text) => {
-    cmd = `[SPEAK] ${text}`;
-    workers.speaker.stdin.write(cmd + "\n");
-  });
+  // ipcMain.handle("speak", (event, text) => {
+  //   cmd = `[SPEAK] ${text}`;
+  //   workers.speaker.stdin.write(cmd + "\n");
+  // });
 
   // mac os - re-create window when dock icon is clicked and no other windows are open
   app.on("activate", function () {

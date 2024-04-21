@@ -11,7 +11,6 @@ function spawnWorker(type) {
 
   let command = `${process.env.PYTHON_PATH} ${workerPath}`;
   const worker = spawn(command, { shell: true });
-  // worker = spawn(command, ['--arg1', 'val1'])
 
   return worker;
 }
