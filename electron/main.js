@@ -26,9 +26,9 @@ function createWindow() {
 
 function createWorkers() {
   console.log("creating workers");
-  speaker = utils.spawnWorker("speak");
-  whisper = utils.spawnWorker("transcribe");
-  openInterpreter = utils.spawnWorker("openInterpreter");
+  let speaker = utils.spawnWorker("speak");
+  let whisper = utils.spawnWorker("transcribe");
+  let OI = utils.spawnWorker("openInterpreter");
 
   speaker.stderr.on("data", (data) => {
     console.log(`stderr: ${data}`);
@@ -56,36 +56,20 @@ function createWorkers() {
     }
 
     if (message.startsWith("[USERSAYS]")) {
-      const userCommand = message.replace("[USERSAYS]", "").trim(); // Use substitution to remove the "[USERSAYS]" token
-      mainWindow?.webContents.send("user-says", userCommand);
-      // TODO: send to promptengineer
-      console.log(message);
+      message = message.replace("[USERSAYS]", "").trim(); // Use substitution to remove the "[USERSAYS]" token
+      OI.stdin.write(`[PROMPT] ${message}`);
+      speaker.stdin.write(`[SPEAK] working on it!`);
+      console.log(`[PROMPT] ${message}`);
     }
   });
 
-  // promptengineer = utils.spawnWorker("promptengineer");
 
-  // promptengineer.stdout.on("data", (data) => {
-  //   const message = data.toString().trim();
-  //   console.log(message);
-
-  //   if (message.startsWith("[TELLUSER")) {
-  //     cmd = `[SPEAK] ${message.split(" ")[1]}`;
-  //     speaker.stdin.write(cmd + "\n");
-  //   }
-  // });
-
-  return { speaker: speaker, whisper: whisper };
+  return { speaker: speaker, whisper: whisper, oi: OI };
 }
 
 app.whenReady().then(() => {
   workers = createWorkers();
   createWindow();
-
-  // ipcMain.handle("speak", (event, text) => {
-  //   cmd = `[SPEAK] ${text}`;
-  //   workers.speaker.stdin.write(cmd + "\n");
-  // });
 
   // mac os - re-create window when dock icon is clicked and no other windows are open
   app.on("activate", function () {
