@@ -6,7 +6,7 @@ function spawnWorker(type) {
   if (type === "speak") {
     workerPath = path.join(process.env.WORKER_DIR, "tts", "speak.py");
   } else if (type === "transcribe") {
-    workerPath = path.join(process.env.WORKER_DIR, "whisper", "transcribe.py");
+    workerPath = path.join(process.env.WORKER_DIR, "stt", "transcribe.py");
   }
 
   let command = `${process.env.PYTHON_PATH} ${workerPath}`;

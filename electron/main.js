@@ -55,7 +55,8 @@ function createWorkers() {
     }
 
     if (message.startsWith("[USERSAYS]")) {
-      message = message.replace("[USERSAYS]", "").trim(); // Use substitution to remove the "[USERSAYS]" token
+      const userCommand = message.replace("[USERSAYS]", "").trim(); // Use substitution to remove the "[USERSAYS]" token
+      mainWindow?.webContents.send("user-says", userCommand);
       // TODO: send to promptengineer
       console.log(message);
     }
