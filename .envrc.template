@@ -1,0 +1,5 @@
+export WORKER_DIR="$(pwd)/workers"
+export PYTHON_PATH="/home/muaddib/.conda/envs/aiccessible/bin/python"
+export PYGAME_HIDE_SUPPORT_PROMPT=1
+export OPENAI_API_KEY=""
+export GROQ_API_KEY=""
