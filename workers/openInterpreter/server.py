@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, BackgroundTasks
 from pydantic import BaseModel
 import uvicorn
 
@@ -13,8 +13,8 @@ class Data(BaseModel):
 
 
 @app.post("/oiprocessor")
-async def oi_processor(data: Data):
-    oiProcessor.prompt_pipeline(data.prompt)
+async def oi_processor(data: Data, background: BackgroundTasks):
+    background.add_task(oiProcessor.prompt_pipeline, data.prompt)
 
     return {"message": "working on it!"}
 
