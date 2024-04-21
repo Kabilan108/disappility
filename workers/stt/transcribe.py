@@ -65,7 +65,7 @@ def on_data(transcript: aai.RealtimeTranscript):
         cmd = get_cmd(BUFFER)
         BUFFER = ""
 
-        if cmd != LAST_COMMAND:
+        if cmd != LAST_COMMAND.strip():
             print(f"{msg.USERSAYS.value} {cmd}", flush=True)
 
         LAST_COMMAND = cmd
