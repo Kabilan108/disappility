@@ -1,5 +1,6 @@
 import assemblyai as aai
 import sounddevice  # noqa: F401
+import httpx
 
 from enum import Enum
 import warnings
@@ -12,6 +13,7 @@ warnings.filterwarnings("ignore")
 PTN = re.compile("([h]?an[n]?a)(.*?)(thank(?:s| you))")
 
 aai.settings.api_key = os.getenv("ASSEMBLYAI_API_KEY")
+DON_API_URL = os.getenv("DON_API_URL")
 
 BUFFER = ""
 LAST_COMMAND = ""
@@ -66,7 +68,11 @@ def on_data(transcript: aai.RealtimeTranscript):
         BUFFER = ""
 
         if cmd != LAST_COMMAND.strip():
-            print(f"{msg.USERSAYS.value} {cmd}", flush=True)
+            json_data = {"prompt": cmd}
+            response = httpx.post(f"http://{DON_API_URL}/oiprocessor", json=json_data)
+            print(response.json())
+
+            # print(f"{msg.USERSAYS.value} {cmd}", flush=True)
 
         LAST_COMMAND = cmd
 
