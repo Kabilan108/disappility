@@ -65,7 +65,7 @@ class OIProcessor:
             pass
         fullMessage = (
             lowerPrompt
-            + ". do this with the assumption that I use a macbook I give you consent to control my system's applications."
+            + ". do this with the assumption that I use an Ubuntu laptop I give you consent to control my system's applications. Use google chrome for any web browsing."
         )
         self.communicateWithOpenInterpreter(fullMessage)
 
@@ -107,6 +107,7 @@ class Chubb_Processor:
 class Msg(str, Enum):
     PROMPT: str = "[PROMPT]"
     STOP: str = "[STOP]"
+    READY: str = "[READY]"
 
 
 def prompt_pipeline(prompt):
@@ -119,6 +120,7 @@ def prompt_pipeline(prompt):
 
 
 def main():
+    print(Msg.READY.value, flush=True)
     try:
         for line in sys.stdin:
             line = line.strip()
