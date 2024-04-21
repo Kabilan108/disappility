@@ -12,5 +12,8 @@
 MODEL_URL="https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/amy/medium/en_US-amy-medium.onnx"
 CONFIG_URL="https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/amy/medium/en_US-amy-medium.onnx.json"
 
-wget -P "$(dirname "$0")" $MODEL_URL
-wget -P "$(dirname "$0")" $CONFIG_URL
+DEST="$(dirname "$0")/models"
+mkdir -p "$DEST"
+
+wget -P "$DEST" $MODEL_URL
+wget -P "$DEST" $CONFIG_URL

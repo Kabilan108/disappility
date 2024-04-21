@@ -3,6 +3,7 @@
 from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline
 import speech_recognition as sr
 import numpy as np
+import sounddevice  # noqa: F401
 import torch
 
 from datetime import datetime, timedelta
@@ -17,13 +18,17 @@ MODEL_CHOICES = {
     "medium": "distil-whisper/distil-medium.en",
     "large": "distil-whisper/distil-large-v3",
 }
-DEFAULT_MODEL = "medium"
+DEFAULT_MODEL = "small"
 
 
-def load_model(model_name: str):
+def load_model(model_name: str, use_cpu: bool = False):
     try:
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        dtype = torch.float16 if torch.cuda.is_available() else torch.float32
+        if use_cpu:
+            device = torch.device("cpu")
+            dtype = torch.float32
+        else:
+            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            dtype = torch.float16 if torch.cuda.is_available() else torch.float32
 
         model = AutoModelForSpeechSeq2Seq.from_pretrained(
             model_name,
@@ -78,6 +83,11 @@ def main():
         "consider it a new line in the transcription.",
         type=float,
     )
+    parser.add_argument(
+        "--use_cpu",
+        action="store_true",
+        help="Set this flag to force the model to use CPU instead of GPU.",
+    )
     if "linux" in platform:
         parser.add_argument(
             "--default_microphone",
@@ -118,7 +128,7 @@ def main():
     # Load / Download model
     model = MODEL_CHOICES[args.model]
     # audio_model = whisper.load_model(model)
-    audio_model = load_model(model)
+    audio_model = load_model(model, use_cpu=args.use_cpu)
 
     record_timeout = args.record_timeout
     phrase_timeout = args.phrase_timeout
