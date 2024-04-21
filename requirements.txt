@@ -1,5 +1,5 @@
 numpy
-piper-tts
+# piper-tts
 pyaudio
 sounddevice
 SpeechRecognition
