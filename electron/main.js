@@ -38,6 +38,10 @@ function createWorkers() {
     console.log(`stderr: ${data}`);
   });
 
+  OI.stderr.on("data", (data) => {
+    console.log(`stderr: ${data}`);
+  });
+
   speaker.stdout.on("data", (data) => {
     const message = data.toString().trim();
 
@@ -48,7 +52,9 @@ function createWorkers() {
   });
 
   whisper.stdout.on("data", (data) => {
-    const message = data.toString().trim();
+    let message = data.toString().trim();
+
+    console.log(`whisper: ${message}`);
 
     if (message == "[READY]") {
       console.log("whisper is ready");
@@ -56,13 +62,17 @@ function createWorkers() {
     }
 
     if (message.startsWith("[USERSAYS]")) {
-      message = message.replace("[USERSAYS]", "").trim(); // Use substitution to remove the "[USERSAYS]" token
+      message = message.replace("[USERSAYS]", "[PROMPT]").trim(); // Use substitution to remove the "[USERSAYS]" token
+      console.log(`${message}`);
+      // speaker.stdin.write(`[SPEAK] working on it!`);
       OI.stdin.write(`[PROMPT] ${message}`);
-      speaker.stdin.write(`[SPEAK] working on it!`);
-      console.log(`[PROMPT] ${message}`);
     }
   });
 
+  OI.stdout.on("data", (data) => {
+    let message = data.toString().trim();
+    console.log(`OI: ${message}`);
+  });
 
   return { speaker: speaker, whisper: whisper, oi: OI };
 }

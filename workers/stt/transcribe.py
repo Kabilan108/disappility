@@ -68,9 +68,15 @@ def on_data(transcript: aai.RealtimeTranscript):
         BUFFER = ""
 
         if cmd != LAST_COMMAND.strip():
-            json_data = {"prompt": cmd}
-            response = httpx.post(f"http://{DON_API_URL}/oiprocessor", json=json_data)
-            print(response.json())
+            try:
+                json_data = {"prompt": cmd}
+                print("sending", json_data)
+                response = httpx.post(
+                    f"http://{DON_API_URL}/oiprocessor", json=json_data
+                )
+                print(response.json())
+            except Exception as E:
+                print(E)
 
             # print(f"{msg.USERSAYS.value} {cmd}", flush=True)
 
